@@ -1,95 +1,154 @@
-import Image from "next/image";
+
+"use client";
+import { useEffect, useState } from "react";
 import styles from "./page.module.css";
 
 export default function Home() {
+  const [qr, setQr] = useState(null);
+  const [ready, setReady] = useState(false);
+  const [disconnected, setDisconnected] = useState(false);
+  const [reconnecting, setReconnecting] = useState(false);
+
+  useEffect(() => {
+    const fetchQr = async () => {
+      try {
+        const res = await fetch("http://localhost:3001/wa/qr");
+        const data = await res.json();
+        if (data.qr) setQr(data.qr);
+      } catch {}
+    };
+    const fetchStatus = async () => {
+      try {
+        const res = await fetch("http://localhost:3001/wa/status");
+        const data = await res.json();
+        setReady(data.ready);
+        setDisconnected(data.disconnected);
+        if (data.disconnected) {
+          setQr(null);
+        }
+      } catch {}
+    };
+    fetchQr();
+    fetchStatus();
+    const interval = setInterval(() => {
+      fetchQr();
+      fetchStatus();
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleReconnect = async () => {
+    setReconnecting(true);
+    try {
+      const res = await fetch("http://localhost:3001/wa/reconnect", {
+        method: 'POST'
+      });
+      if (res.ok) {
+        setDisconnected(false);
+        setReady(false);
+        setQr(null);
+      }
+    } catch (error) {
+      console.error('Reconnect failed:', error);
+    }
+    setReconnecting(false);
+  };
+
+  const handleLogout = async () => {
+    const confirmed = window.confirm('Apakah Anda yakin ingin logout dari WhatsApp? Anda perlu scan QR code lagi untuk menghubungkan kembali.');
+    
+    if (!confirmed) return;
+    
+    try {
+      const res = await fetch("http://localhost:3001/wa/logout", {
+        method: 'POST'
+      });
+      if (res.ok) {
+        setReady(false);
+        setDisconnected(true);
+        setQr(null);
+        alert('Logout berhasil! Silakan klik "Hubungkan Kembali" untuk menghubungkan ulang.');
+      }
+    } catch (error) {
+      console.error('Logout failed:', error);
+      alert('Logout gagal. Silakan coba lagi.');
+    }
+  };
+
   return (
     <div className={styles.page}>
       <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.js</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
+        <h1>Koneksi WhatsApp Otomatis</h1>
+        
+        {disconnected ? (
+          <div>
+            <h2 style={{color: 'red'}}>WhatsApp Terputus!</h2>
+            <p>Koneksi WhatsApp telah terputus. Klik tombol di bawah untuk menghubungkan kembali.</p>
+            <button 
+              onClick={handleReconnect}
+              disabled={reconnecting}
+              style={{
+                padding: '10px 20px',
+                fontSize: '16px',
+                backgroundColor: '#25D366',
+                color: 'white',
+                border: 'none',
+                borderRadius: '5px',
+                cursor: reconnecting ? 'not-allowed' : 'pointer'
+              }}
+            >
+              {reconnecting ? 'Menghubungkan...' : 'Hubungkan Kembali'}
+            </button>
+          </div>
+        ) : !ready ? (
+          <div>
+            <p>Scan QR code dengan WhatsApp Anda:</p>
+            {qr ? (
+              <img src={qr} alt="QR Code WhatsApp" style={{ width: 300 }} />
+            ) : (
+              <p>Menunggu QR code...</p>
+            )}
+          </div>
+        ) : (
+          <div>
+            <h2 style={{color: 'green'}}>WhatsApp Terhubung!</h2>
+            <p>Pesan otomatis akan dikirim setiap pukul 17:41.</p>
+            
+            <div style={{ marginTop: '20px' }}>
+              <button 
+                onClick={() => window.open('http://localhost:3001/wa/groups', '_blank')}
+                style={{
+                  padding: '10px 20px',
+                  fontSize: '16px',
+                  backgroundColor: '#007bff',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  marginRight: '10px'
+                }}
+              >
+                Lihat Daftar Grup
+              </button>
+              
+              <button 
+                onClick={handleLogout}
+                style={{
+                  padding: '10px 20px',
+                  fontSize: '16px',
+                  backgroundColor: '#dc3545',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '5px',
+                  cursor: 'pointer'
+                }}
+              >
+                Logout dari WhatsApp
+              </button>
+            </div>
+          </div>
+        )}
       </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
 }
