@@ -4,6 +4,8 @@ const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
+const schedule = require('node-schedule');
+const dayjs = require('dayjs');
 
 const app = express();
 app.use(cors());
@@ -12,7 +14,7 @@ const groupId = '120363162959778625@g.us';
 let qrCodeData = null;
 let isReady = false;
 let client;
-let targetNumber = '6285147236609@c.us'; // Nomor tujuan chat pribadi
+let targetNumber = '6285147236609@c.us'; // Nomor yang akan di-tag
 let isDisconnected = false;
 
 function startWhatsApp() {
@@ -174,23 +176,34 @@ app.get('/wa/groups', async (req, res) => {
 // Start WhatsApp client
 startWhatsApp();
 
-// Schedule message every day at 17:53
-const schedule = require('node-schedule');
-const dayjs = require('dayjs');
-const tanggal = dayjs().format('DD/MM/YYYY');
-
-schedule.scheduleJob('03 19 * * *', () => {
+// Schedule messages for weekdays only (Monday-Friday)
+// Morning brief at 09:00 (Monday-Friday)
+schedule.scheduleJob('0 9 * * 1-5', () => {
   if (isReady && groupId) {
+    const tanggal = dayjs().format('DD/MM/YYYY');
     client.sendMessage(groupId, `#MorningBrief #${tanggal}
-        
-Ari @6285147236609 ini mau kerjakan fitur atau tiket apa? dan apakah ada masalah atau kendala hari ini?
-Rifal @Rifal ICT hari ini mau kerjakan fitur atau tiket apa? dan apakah ada masalah atau kendala hari ini?
-Wahyu @Wahyu ICT sudah lapor breaf morning di grup web`, {
+
+Untuk Hari ini mau mengerjakan apa saja ? dan apakah ada kendala atau masalah?
+
+cc @6285806083274 @6289501201414 @6285704134504 `, {
       mentions: [targetNumber]
     })
-      .catch((e) => console.log('failed send message',e));
+      .catch(() => {});
   }
 });
+
+// Evening brief at 17:00 (Monday-Friday)
+// schedule.scheduleJob('0 17 * * 1-5', () => {
+//   if (isReady && groupId) {
+//     const tanggal = dayjs().format('DD/MM/YYYY');
+//     client.sendMessage(groupId, `#commit #${tanggal}
+        
+// J`, {
+//       mentions: [targetNumber]
+//     })
+//       .catch(() => {});
+//   }
+// });
 
 app.listen(3001, () => {
   console.log('WhatsApp server running on port 3001');
