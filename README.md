@@ -22,7 +22,7 @@ npm install
 npm run dev
 ```
 Ini akan menjalankan:
-- Frontend (React + Vite) di port 5173
+- Frontend (React + Vite) di port 7777
 - Backend (Express + WhatsApp) di port 3001
 
 ### Production Mode
@@ -34,7 +34,7 @@ npm start
 ## Cara Penggunaan
 
 1. Jalankan aplikasi dengan `npm run dev`
-2. Buka browser dan akses `http://localhost:5173`
+2. Buka browser dan akses `http://localhost:7777`
 3. Klik "Hubungkan ke WhatsApp"
 4. Scan QR Code yang muncul dengan WhatsApp di ponsel
 5. Setelah terhubung, Anda dapat:
