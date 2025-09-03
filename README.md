@@ -1,36 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# WhatsApp Auto Brief
 
-## Getting Started
+Aplikasi untuk mengirim pesan otomatis ke grup WhatsApp berdasarkan jadwal tertentu.
 
-First, run the development server:
+## Persyaratan Sistem
 
+- Node.js 16 atau lebih tinggi
+- npm 7 atau lebih tinggi
+
+## Instalasi
+
+1. Clone repository ini
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+## Menjalankan Aplikasi
+
+### Development Mode
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+Perintah ini akan menjalankan:
+- WhatsApp server di port 3001
+- React frontend di port 3000
+
+### Production Mode
+```bash
+# Build aplikasi
+npm run build
+
+# Jalankan server WhatsApp
+npm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Fitur
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+- **Koneksi WhatsApp**: Scan QR code untuk menghubungkan WhatsApp
+- **Pesan Otomatis**: Mengirim pesan brief otomatis setiap hari Senin-Jumat pukul 09:00
+- **Manajemen Koneksi**: Reconnect dan logout dari WhatsApp
+- **Daftar Grup**: Melihat semua grup WhatsApp yang tersedia
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Teknologi yang Digunakan
 
-## Learn More
+- **Frontend**: React.js 18 + Vite
+- **Backend**: Express.js + whatsapp-web.js
+- **Scheduler**: node-schedule
+- **QR Code**: qrcode
 
-To learn more about Next.js, take a look at the following resources:
+## API Endpoints
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `GET /wa/qr` - Mendapatkan QR code untuk login WhatsApp
+- `GET /wa/status` - Status koneksi WhatsApp
+- `POST /wa/reconnect` - Reconnect WhatsApp
+- `POST /wa/logout` - Logout dari WhatsApp
+- `GET /wa/groups` - Daftar grup WhatsApp
+- `POST /wa/send` - Kirim pesan
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Konfigurasi
 
-## Deploy on Vercel
+Edit file `wa-server.js` untuk mengubah:
+- Group ID target
+- Nomor yang akan di-tag
+- Jadwal pengiriman pesan
+- Template pesan
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Catatan
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Aplikasi ini kompatibel dengan Node.js 16
+- WhatsApp session akan tersimpan lokal di folder `.wwebjs_auth`
+- Aplikasi frontend berjalan di port 3000, API di port 3001
