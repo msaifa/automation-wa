@@ -9,9 +9,14 @@ const app = express();
 const port = 3001;
 
 const groupId = '120363162959778625@g.us';
-const text = 'halo selamat pagi Saif @628976666495';
-const mentionNumber = ['628976666495@c.us'];
-const cron = '32 11 * * *'; // Every day at 09:00 AM UTC+7 (11:00 AM UTC)
+const tanggal = dayjs().format('DD/MM/YYYY');
+const text = `#MorningBrief #${tanggal}
+        
+Untuk Hari ini mau mengerjakan apa aja ? Dan apakah ada kendala atau masalah ?
+
+cc @6285806083274 @6289501201414 @6285704134504`;
+const mentionNumber = ['6285806083274@c.us', '6289501201414@c.us', '6285704134504@c.us'];
+const cron = '* 9 * * *'; // Every day at 09:00 AM UTC+7 (11:00 AM UTC)
 
 app.use(cors());
 app.use(express.json());
